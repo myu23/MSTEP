@@ -11,7 +11,7 @@ public class Data {
 
     public int default_T = 10;
     public int default_scenarioPerStage = 5;
-
+    public int M = 1000;
     // branch data
     public int nBranch;
     public int[] n0;
@@ -36,8 +36,8 @@ public class Data {
     public Data(){
         this.T = 5;
         this.scenarioPerStage = 3;
-        this.discountRate = 1/1.1;
-        this.maxAddedLine = 2;
+        this.discountRate = 1.0/1.1;
+        this.maxAddedLine = 6;
     }
     /**
      *Load data from csv file
@@ -45,7 +45,7 @@ public class Data {
      *@param nBranch: number of branch
      */
     public void loadData(int nBus, int nBranch){
-        System.out.println("Start loading data...");
+        System.out.println("Start loading topology data...");
         String dir = "./Data/"+nBus+"bus/";
         BufferedReader br = null;
         String line = "";
@@ -99,8 +99,8 @@ public class Data {
             for(int i = 0; i < nBranch; i++){
                 line = br.readLine();
                 String[] li = line.split(cvsSplitBy);
-                from[i] = Integer.parseInt(li[0]);
-                to[i] = Integer.parseInt(li[1]);
+                from[i] = Integer.parseInt(li[0])-1;
+                to[i] = Integer.parseInt(li[1])-1;
                 n0[i] = Integer.parseInt(li[2]);
                 reactance[i] = Double.parseDouble(li[3]);
                 barF[i] = Integer.parseInt(li[4]);
@@ -127,9 +127,11 @@ public class Data {
 
     public void test(){
         Data d = new Data();
-        d.loadData(46,79);
+        d.generateInstance(6,15, 1);
         System.out.println(Arrays.toString(d.gen_level));
         System.out.println(Arrays.toString(d.cost));
+        System.out.println(Arrays.toString(d.stochasticLoad[1][0]));
+        System.out.println(Arrays.toString(d.tree.nodeList.get(4).vals));
 
     }
 
@@ -156,7 +158,7 @@ public class Data {
             }
             line = br.readLine();
             String[] li = line.split(cvsSplitBy);
-            int count = 0;
+            int count = -1;
             for(int t = 0; t < default_T; t++){
                 for(int s = 0; s < default_scenarioPerStage; s++) {
                     for(int b = 0; b < nBus; b++){
@@ -185,9 +187,22 @@ public class Data {
         }
     }
 
-
     public void buildTree(){
-        this.tree = new ScenarioTree();
-
+        this.tree = new ScenarioTree(T, scenarioPerStage);
+        for(int t = 0; t < T; t++){
+            for(int i = 0; i < tree.nodeByDepth.get(t+1).size(); i++){
+                ScenarioTree.Node node = tree.nodeList.get(tree.nodeByDepth.get(t+1).get(i));
+                //System.out.println(t+" "+Arrays.toString(stochasticLoad[t][i%scenarioPerStage]));
+                node.setVals(stochasticLoad[t][i%scenarioPerStage]);
+            }
+        }
+        System.out.println("Tree built.");
     }
+
+    public void generateInstance(int bus, int branch, int idx){
+        loadData(bus, branch);
+        loadSamples(idx);
+        buildTree();
+    }
+
 }
