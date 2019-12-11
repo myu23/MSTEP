@@ -46,7 +46,7 @@ public class SDDiP {
      * manually set initial under-approxiamtion
      * @param psi
      */
-    public void setPsi(double[] psi){
+    public void setInitPsi(double[] psi){
         this.initPsi = psi;
     }
 
