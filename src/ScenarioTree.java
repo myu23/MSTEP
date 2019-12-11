@@ -1,15 +1,25 @@
+/**
+ * This class contains the scenario tree data structure for mutli-stage stochastic programming problem
+ * @author Miao Yu
+ * @version 1.0
+ */
+
+
 import java.util.ArrayList;
 
 public class ScenarioTree {
     public ArrayList<Node> nodeList;
     public ArrayList<ArrayList<Integer>> nodeByDepth;
 
+    /**
+     * Node structure
+     */
     public class Node{
         public int index;
         public int depth;
         public int parent;
         public ArrayList<Integer> children;
-        public double[] vals;
+        public double[] vals; // stochastic data stored in array
 
         public Node(int d, int p){
             this.depth = d;

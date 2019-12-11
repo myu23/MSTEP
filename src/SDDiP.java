@@ -10,6 +10,8 @@
 
 import gurobi.*;
 
+import java.util.Random;
+
 
 public class SDDiP {
     private double lowerbound;
@@ -69,24 +71,24 @@ public class SDDiP {
         VarTheta[][][] varTheta = new VarTheta[maxIter][M][data.T+1];
 
         Psi[][] psi = new Psi[M][data.T+1];
-        Xi[][] xi = new Xi[M][data.T+1];
+        Xi[] xi = new Xi[M];
 
         VarV[][][] varV = new VarV[maxIter][M][data.T+1];
         VarPi[][][] varPi = new VarPi[maxIter][M][data.T+1];
 
 
         while(iterCounter < maxIter){
+            // Sampling steps
             for(int k = 0; k < M; k++){
-                for(int t = 1; t < data.T+1; t++){
-                    xi[k][t] = new Xi();
-                }
+                xi[k] = new Xi();
+
             }
 
             // forward steps
             double[] u = new double[M];
             for(int k = 0; k < M; k++){
                 for(int t = 1; t < data.T+1; t++){
-                    ForwardProblem fp = new ForwardProblem(varX[iterCounter][k][t-1], psi[iterCounter][t], xi[k][t]);
+                    ForwardProblem fp = new ForwardProblem(varX[iterCounter][k][t-1], psi[iterCounter][t], xi[k], t);
                     fp.solve();
                     varX[iterCounter][k][t] = fp.x;
                     varY[iterCounter][k][t] = fp.y;
@@ -112,7 +114,7 @@ public class SDDiP {
             for(int t = data.T+1; t > 1; t--){
                 for(int k = 0; k < M; k++){
                     for(int j = 0; j < data.scenarioPerStage; j++){
-                        BackwardProblem bp = new BackwardProblem(varX[iterCounter][k][t-1], psi[iterCounter][t], xi[k][t]);
+                        BackwardProblem bp = new BackwardProblem(varX[iterCounter][k][t-1], psi[iterCounter][t], xi[k]);
                         bp.solve();
                         varV[iterCounter][k][t] = bp.v;
                         varPi[iterCounter][k][t] = bp.pi;
@@ -128,7 +130,17 @@ public class SDDiP {
      * class used to store stochastic data
      */
     public class Xi{
+        public int[] nodes;
 
+        public Xi(){
+            int total = data.tree.nodeByDepth.get(data.T).size();
+            int rand = (int) (Math.random()* total);
+            nodes = new int[data.T+1];
+            nodes[data.T] = rand;
+            for(int t = data.T -1; t >= 0; t--){
+                nodes[t] = data.tree.nodeList.get(nodes[t+1]).parent;
+            }
+        }
     }
 
     public class VarX{
@@ -168,7 +180,7 @@ public class SDDiP {
         public VarTheta theta;
         public double obj;
 
-        public ForwardProblem(VarX x , Psi psi, Xi xi){
+        public ForwardProblem(VarX x , Psi psi, Xi xi, int t){
 
         }
 
