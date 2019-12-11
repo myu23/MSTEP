@@ -118,7 +118,7 @@ public class DEmodel {
                 //sum_flow - gamma_{ij}*n0_{ij}*(theta_i - theta_j) = 0
                 for(int br = 0; br < data.nBranch; br++){
                     expr = new GRBLinExpr();
-                    for(int k = 0; k < data.maxAddedLine; k++){
+                    for(int k = 0; k < data.n0[br]; k++){
                         expr.addTerm(1.0, flow[br][k][s]);
                     }
                     expr.addTerm(-100.0 / data.reactance[br] * data.n0[br], theta[data.from[br]][s]);

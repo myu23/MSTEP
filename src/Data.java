@@ -1,3 +1,10 @@
+/**
+ * This class contains the data infor for mutli-stage stochastic programming problem
+ * @author Miao Yu
+ * @version 1.0
+ */
+
+
 import java.io.*;
 import java.util.Arrays;
 
@@ -11,7 +18,10 @@ public class Data {
 
     public int default_T = 10;
     public int default_scenarioPerStage = 5;
-    public int M = 1000;
+    public int M = 10000;
+
+    public double dcPenalty = -1000;
+
     // branch data
     public int nBranch;
     public int[] n0;
@@ -28,8 +38,11 @@ public class Data {
     public double[] load;
     public double[][][] stochasticLoad;
 
+
+
     // Scenario Tree
     public ScenarioTree tree;
+
     /**
      *Default constructor
      */
@@ -125,15 +138,7 @@ public class Data {
 
     }
 
-    public void test(){
-        Data d = new Data();
-        d.generateInstance(6,15, 1);
-        System.out.println(Arrays.toString(d.gen_level));
-        System.out.println(Arrays.toString(d.cost));
-        System.out.println(Arrays.toString(d.stochasticLoad[1][0]));
-        System.out.println(Arrays.toString(d.tree.nodeList.get(4).vals));
 
-    }
 
     /**
      * load stochastic samples from csv files
@@ -198,6 +203,7 @@ public class Data {
         }
         System.out.println("Tree built.");
     }
+
 
     public void generateInstance(int bus, int branch, int idx){
         loadData(bus, branch);
