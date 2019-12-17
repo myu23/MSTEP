@@ -6,8 +6,10 @@ public class testDrive {
         d.loadSamples(1);
         d.buildTree();
 
-        DEmodel de = new DEmodel(d, d.tree);
-        de.main();
+//        DEmodel de = new DEmodel(d, d.tree);
+//        de.main();
+        SDDiP sddip = new SDDiP(d);
+        sddip.solve();
     }
 
 }

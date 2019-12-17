@@ -5,9 +5,12 @@
  *
  * Tree structure:
  *      root --------stage 0 (depth 0)
+ *     (node0)
  *      /  \
  *   node1 node2 ----stage 1 (depth 1)
  *   .........
+ *
+ *
  */
 
 
@@ -26,6 +29,7 @@ public class ScenarioTree {
         public int parent;
         public ArrayList<Integer> children;
         public double[] vals; // stochastic data stored in array
+        public double probability;
 
         public Node(int d, int p){
             this.depth = d;
@@ -36,6 +40,10 @@ public class ScenarioTree {
         public void setVals(double[] v){
             this.vals = v;
         }
+
+        public void setProb(double pr){
+            this.probability = pr;
+        }
     }
 
     public void addNode(Node n){
@@ -44,6 +52,7 @@ public class ScenarioTree {
         if(n.depth != 0){
             this.nodeList.get(n.parent).children.add(n.index);
         }
+
     }
 
     public int size(){
@@ -51,12 +60,16 @@ public class ScenarioTree {
     }
     public int nSenario() {return this.nodeByDepth.get(maxDepth).size();}
 
+    /*
+    build a tree with (depth+1) levels
+     */
     public ScenarioTree(int depth, int nChildPerNode){
         this.nodeList = new ArrayList<>();
         this.nodeByDepth = new ArrayList<>(depth);
         this.maxDepth = depth;
 
         Node root = new Node(0, -1);
+        root.setProb(1.0);
         addNode(root);
         nodeByDepth.add(new ArrayList<>());
         nodeByDepth.get(0).add(root.index);
@@ -68,6 +81,7 @@ public class ScenarioTree {
                 Node p = nodeList.get(nodeByDepth.get(d).get(i));
                 for(int j = 0; j < nChildPerNode; j++){
                     Node child = new Node(p.depth + 1, p.index);
+                    child.setProb(Math.pow(1.0/nChildPerNode, child.depth));
                     addNode(child);
                     nodeByDepth.get(d+1).add(child.index);
                 }

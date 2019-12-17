@@ -47,7 +47,7 @@ public class Data {
      *Default constructor
      */
     public Data(){
-        this.T = 5;
+        this.T = 3;
         this.scenarioPerStage = 3;
         this.discountRate = 1.0/1.1;
         this.maxAddedLine = 6;

@@ -61,7 +61,7 @@ public class DEmodel {
             GRBVar[][] DC = new GRBVar[data.nBus][tree.size()];
             for(int b = 0; b < data.nBus; b++) {
                 for (int i = 0; i < tree.size(); i++){
-                    DC[b][i] = model.addVar(0, 10 * data.load[b], 0, GRB.CONTINUOUS, "DC_" + b + "_" + i);
+                    DC[b][i] = model.addVar(0, data.load[b], 0, GRB.CONTINUOUS, "DC_" + b + "_" + i);
                 }
             }
                 // Add constraints
@@ -111,11 +111,12 @@ public class DEmodel {
                     }
                     expr.addTerm(1.0, generation[b][s]);
                     expr.addTerm(1.0, DC[b][s]);
-                    model.addConstr(expr,GRB.EQUAL, 2*tree.nodeList.get(s).vals[b], "FlowBalance_"+b+"_"+s);
+                    model.addConstr(expr,GRB.EQUAL, tree.nodeList.get(s).vals[b], "FlowBalance_"+b+"_"+s);
                 }
 
                 //initial valid
                 //sum_flow - gamma_{ij}*n0_{ij}*(theta_i - theta_j) = 0
+                // gamma = 100/reactance
                 for(int br = 0; br < data.nBranch; br++){
                     expr = new GRBLinExpr();
                     for(int k = 0; k < data.n0[br]; k++){
