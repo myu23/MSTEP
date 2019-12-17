@@ -39,8 +39,8 @@ public class SDDiP {
         this.data = data;
         this.lowerbound = Double.MIN_VALUE;
         this.upperbound = Double.MAX_VALUE;
-        this.iterCounter = 1;
-        this.maxIter = 50;
+        this.iterCounter = 0;
+        this.maxIter = 1;
         this.M = 40;
         this.initPsi = new double[data.T+1];
         this.random = new Random(1);
@@ -72,8 +72,8 @@ public class SDDiP {
         VarZ[][][] varZ = new VarZ[maxIter][M][data.T+1];
         VarTheta[][][] varTheta = new VarTheta[maxIter][M][data.T+1];
 
-        Psi[][] psi = new Psi[M][data.T+1];
-        for(int i = 0; i < M; i++){
+        Psi[][] psi = new Psi[maxIter+1][data.T+1];
+        for(int i = 0; i < maxIter+1; i++){
             for(int t = 0; t < data.T+1; t++){
                 psi[i][t] = new Psi(initPsi[t]);
             }
@@ -120,7 +120,9 @@ public class SDDiP {
 
             upperbound = muh + 1.96 * Math.pow(sigma2/M, 0.5);
 
-
+//            used to debug
+//            if(iterCounter+1 == maxIter)
+//                return;
             // backward steps
             for(int t = data.T; t >= 1; t--){
                 for(int k = 0; k < M; k++) {
@@ -128,20 +130,23 @@ public class SDDiP {
                     double[][][] pi = new double[data.scenarioPerStage][data.nBranch][data.maxAddedLine];
                     for (int j = 0; j < data.scenarioPerStage; j++) {
                         BackwardProblem bp = new BackwardProblem();
-                        bp.solveBender(varX[iterCounter][k][t - 1], psi[iterCounter + 1][t], xi[k], t);
+                        bp.solveBender(varX[iterCounter][k][t - 1], psi[iterCounter+1][t], xi[k], t);
                         varV[iterCounter][j][t] = bp.v;
                         v[j] = bp.v.v;
                         varPi[iterCounter][j][t] = bp.pi;
                         pi[j] = bp.pi.pi;
                     }
-                    psi[iterCounter][t].vList.add(v);
-                    psi[iterCounter][t].piList.add(pi);
+                    psi[iterCounter+1][t-1].vList.add(v);
+                    psi[iterCounter+1][t-1].piList.add(pi);
                 }
             }
 
             // update lowerbound
             ForwardProblem fp = new ForwardProblem();
-            fp.solveRoot(psi[iterCounter][0]);
+            fp.solveRoot(psi[iterCounter+1][0]);
+            System.out.println(psi[iterCounter+1][0].vList.size());
+            System.out.println(psi[iterCounter+1][0].piList.size());
+
             lowerbound = fp.obj;
 
             iterCounter++;
@@ -403,7 +408,7 @@ public class SDDiP {
 
                 model.optimize();
 
-
+                //System.out.println("Theta: "+theta.get(GRB.DoubleAttr.X));
 
                 //get solution
                 double[][] xsol = model.get(GRB.DoubleAttr.X, alpha);
@@ -501,7 +506,7 @@ public class SDDiP {
                 expr.addTerm(1, theta);
 
                 model.setObjective(expr, GRB.MINIMIZE);
-
+                model.write("Root.lp");
                 model.optimize();
 
 
@@ -721,7 +726,7 @@ public class SDDiP {
                     }
                 }
                 this.pi = new VarPi(pisol);
-                this.v = new VarV(obj);
+                this.v = new VarV(updatedV);
 
                 model.dispose();
                 env.dispose();

@@ -20,7 +20,7 @@ public class Data {
     public int default_scenarioPerStage = 5;
     public int M = 10000;
 
-    public double dcPenalty = -1000;
+    public double dcPenalty = 1000;
 
     // branch data
     public int nBranch;
